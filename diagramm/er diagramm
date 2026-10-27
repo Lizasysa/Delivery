@@ -1,0 +1,66 @@
+@startuml
+skinparam class {
+    BackgroundColor #F9E9E9
+    BorderColor #C29F9F
+    HeaderBackgroundColor #D3B2B2
+    HeaderFontColor #000000
+    FontColor #000000
+    FontSize 14
+    ArrowColor #000000
+    Shadowing false
+}
+skinparam linetype ortho
+skinparam nodesep 80
+skinparam ranksep 80
+hide circle
+hide empty members
+
+entity "Роль (UserRole)" as UserRole {
+  PK roleID: int
+  --
+  name: str
+}
+
+entity "Пользователь (User)" as User {
+  PK userID: int
+  --
+  name: str
+  surname: str
+  email: str
+  password_hash: str
+  balance: double
+  --
+  FK roleID: int
+}
+
+entity "Клиент (Client)" as Client {
+  PK clientID: int
+  FK userID: int
+  --
+  address: str
+  phone: str
+}
+
+entity "Курьер (Courier)" as Courier {
+  PK courierID: int
+  FK userID: int
+  --
+  phone: str
+  vehicle: str
+}
+
+entity "Оператор (Operator)" as Operator {
+  PK operatorID: int
+  FK userID: int
+  --
+  phone: str
+  position: str
+}
+
+' Связи
+UserRole ||--o{ User : "имеет"
+User ||--o| Client : "является"
+User ||--o| Courier : "является"
+User ||--o| Operator : "является"
+
+@enduml

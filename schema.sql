@@ -1,36 +1,78 @@
--- Удаление старых таблиц (в обратном порядке, чтобы не нарушить связи)
-DROP TABLE IF EXISTS Заказ;
-DROP TABLE IF EXISTS Курьер;
-DROP TABLE IF EXISTS Клиент;
+-- =========================================================
+-- Удаление старых таблиц (в обратном порядке)
+-- =========================================================
+DROP TABLE IF EXISTS Client;
+DROP TABLE IF EXISTS Courier;
+DROP TABLE IF EXISTS Operator;
+DROP TABLE IF EXISTS User;
+DROP TABLE IF EXISTS UserRole;
 
--- Таблица «Клиент»
-CREATE TABLE Клиент (
-    id_клиента INTEGER PRIMARY KEY AUTOINCREMENT,
-    ФИО TEXT NOT NULL,
-    адрес TEXT NOT NULL,
-    телефон TEXT NOT NULL
+-- =========================================================
+-- 1. Создание таблиц
+-- =========================================================
+
+-- Таблица ролей (справочник)
+CREATE TABLE UserRole (
+    roleID INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL
 );
 
--- Таблица «Курьер»
-CREATE TABLE Курьер (
-    id_курьера INTEGER PRIMARY KEY AUTOINCREMENT,
-    ФИО TEXT NOT NULL,
-    телефон TEXT NOT NULL,
-    зона_обслуживания TEXT NOT NULL,
-    статус TEXT NOT NULL DEFAULT 'свободен'
+-- Главная таблица пользователей (содержит общие данные)
+CREATE TABLE User (
+    userID INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    surname TEXT NOT NULL,
+    email TEXT NOT NULL UNIQUE,
+    password_hash TEXT NOT NULL,
+    balance REAL DEFAULT 0.0,
+    roleID INTEGER NOT NULL,
+    FOREIGN KEY (roleID) REFERENCES UserRole (roleID)
 );
 
--- Таблица «Заказ»
-CREATE TABLE Заказ (
-    id_заказа INTEGER PRIMARY KEY AUTOINCREMENT,
-    id_клиента INTEGER NOT NULL,
-    id_курьера INTEGER,
-    состав TEXT NOT NULL,
-    стоимость REAL NOT NULL,
-    дата TEXT NOT NULL,
-    статус_доставки TEXT NOT NULL DEFAULT 'Принят',
-    адрес_доставки TEXT NOT NULL,
-    время_доставки TEXT,
-    FOREIGN KEY (id_клиента) REFERENCES Клиент (id_клиента),
-    FOREIGN KEY (id_курьера) REFERENCES Курьер (id_курьера)
+-- Таблица Клиентов (наследуется от User)
+CREATE TABLE Client (
+    clientID INTEGER PRIMARY KEY AUTOINCREMENT,
+    userID INTEGER NOT NULL UNIQUE,
+    address TEXT NOT NULL,
+    phone TEXT NOT NULL,
+    FOREIGN KEY (userID) REFERENCES User (userID) ON DELETE CASCADE
 );
+
+-- Таблица Курьеров (наследуется от User)
+CREATE TABLE Courier (
+    courierID INTEGER PRIMARY KEY AUTOINCREMENT,
+    userID INTEGER NOT NULL UNIQUE,
+    phone TEXT NOT NULL,
+    vehicle TEXT NOT NULL,
+    FOREIGN KEY (userID) REFERENCES User (userID) ON DELETE CASCADE
+);
+
+-- Таблица Операторов (наследуется от User)
+CREATE TABLE Operator (
+    operatorID INTEGER PRIMARY KEY AUTOINCREMENT,
+    userID INTEGER NOT NULL UNIQUE,
+    phone TEXT NOT NULL,
+    position TEXT NOT NULL,
+    FOREIGN KEY (userID) REFERENCES User (userID) ON DELETE CASCADE
+);
+INSERT INTO UserRole (name) VALUES
+('Клиент'),
+('Курьер'),
+('Оператор');
+
+-- Заполнение таблицы «Клиент»
+INSERT INTO User (name, surname, email, password_hash, balance, roleID) VALUES
+('Иван', 'Иванов', 'client@mail.ru', 'hash_123', 1500.50, 1),  -- Клиент
+('Пётр', 'Сидоров', 'courier@mail.ru', 'hash_456', 0.0, 2),    -- Курьер
+('Анна', 'Смирнова', 'operator@mail.ru', 'hash_789', 0.0, 3);  -- Оператор
+
+-- Заполнение таблицы «Курьер»
+INSERT INTO Client (userID, address, phone) VALUES
+(1, 'г. Москва, ул. Ленина, д. 5', '+7-900-111-22-33');
+
+-- Заполнение таблицы «Заказ»
+INSERT INTO Courier (userID, phone, vehicle) VALUES
+(2, '+7-900-444-55-66', 'Автомобиль (Лада)');
+
+INSERT INTO Operator (userID, phone, position) VALUES
+(3, '+7-900-777-88-99', 'Старший оператор');
