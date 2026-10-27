@@ -1,38 +1,54 @@
 @startuml
 left to right direction
 skinparam packageStyle rectangle
-
-actor "Клиент" as Client
-actor "Курьер" as Courier
-actor "Оператор" as Operator
-
-rectangle "Система учёта доставки заказов" {
-  usecase "Оформить заказ" as UC1
-  usecase "Оплатить заказ" as UC2
-  usecase "Получить заказ" as UC3
-  usecase "Отследить заказ" as UC4
-
-  usecase "Регистрация" as UC5
-  usecase "Принять заказ" as UC6
-  usecase "Доставить заказ" as UC7
-
-  usecase "Регистрация " as UC8
-  usecase "Обработать заказ" as UC9
-  usecase "Назначить курьера" as UC10
+skinparam usecase {
+    BackgroundColor white
+    BorderColor black
+}
+skinparam actor {
+    BackgroundColor white
+    BorderColor black
 }
 
-Client --> UC1
-Client --> UC2
-Client --> UC3
-Client --> UC4
+' --- АКТОРЫ ---
+actor "Курьер" as Courier
+actor "Оператор" as Operator
+actor "Клиент" as Client
 
-Courier --> UC5
-Courier --> UC6
-Courier --> UC7
-Courier --> UC4
+' --- ПРЕЦЕДЕНТЫ КУРЬЕРА ---
+usecase "Авторизация" as C_Auth
+usecase "Принять заказ" as C_Accept
+usecase "Изменить статус\nзаказа" as C_Change
 
-Operator --> UC8
-Operator --> UC9
-Operator --> UC10
+Courier --- C_Auth
+C_Auth --- C_Accept
+C_Auth --- C_Change
+
+' --- ПРЕЦЕДЕНТЫ ОПЕРАТОРА ---
+usecase "Авторизация" as O_Auth
+usecase "Регистрация\nпользователей" as O_RegUsers
+usecase "Регистрация\nКурьера" as O_RegCourier
+usecase "Регистрация\nОператора" as O_RegOperator
+
+usecase "Посмотреть все\nзаказы" as O_View
+usecase "Назначить заказ\nкурьеру" as O_Assign
+
+Operator --- O_Auth
+O_Auth --- O_RegUsers
+O_RegUsers --- O_RegCourier
+O_RegUsers --- O_RegOperator
+
+O_View ..> O_Assign : include
+
+' --- ПРЕЦЕДЕНТЫ КЛИЕНТА ---
+usecase "Авторизация" as Cl_Auth
+usecase "Регистрация" as Cl_Reg
+usecase "Оформить заказ" as Cl_Make
+usecase "Оплатить заказ" as Cl_Pay
+
+Client --- Cl_Auth
+Client --- Cl_Reg
+Cl_Auth --- Cl_Make
+Cl_Make --- Cl_Pay
 
 @enduml
